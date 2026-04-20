@@ -1,4 +1,11 @@
-name: Publish to npm (OIDC + provenance)
+name: Publish to npm (token auth)
+
+# Falling back from OIDC trusted-publisher to classic NPM_TOKEN auth.
+# Reason: trusted-publisher config on npmjs.com for this package keeps
+# binding to the wrong repo (lorecraft-io/morgen-mcp) regardless of UI
+# edits — npm backend issue, not a workflow problem. Morgen + fidgetflo
+# publish via OIDC fine; motion uses token until the TP config untangles.
+# Task tracked for 2026-06-15.
 
 on:
   push:
@@ -12,7 +19,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
@@ -23,18 +29,16 @@ jobs:
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
-      - name: Upgrade npm to 11+ (required for OIDC trusted-publisher auth)
-        run: |
-          npm install -g npm@latest
-          npm --version
       - run: npm ci
       - run: npm test
         if: hashFiles('test/**', 'tests/**', 'src/**/*.test.*') != ''
       - name: Publish (dry run)
         if: ${{ inputs.dry-run }}
-        run: npm publish --dry-run --provenance --access public
+        run: npm publish --dry-run --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish
         if: ${{ !inputs.dry-run }}
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         env:
-          NPM_CONFIG_PROVENANCE: true
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
