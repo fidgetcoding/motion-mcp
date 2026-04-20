@@ -1,6 +1,6 @@
 {
   "name": "fidgetcoding-motion-mcp",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "MCP server for Motion calendar — full calendar event access, availability checking, and task management. Uses Motion's internal API for calendar features the public API doesn't support.",
   "type": "module",
   "main": "src/index.js",
