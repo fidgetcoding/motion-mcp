@@ -6,6 +6,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 > **Note on package name:** This package was originally published as `motion-calendar-mcp` on npm. Renamed to `fidgetcoding-motion-mcp` on 2026-04-18 under the FidgetCoding brand umbrella (after briefly trying the scoped `@lorecraft/motion-mcp` as an intermediate stop — bare `motion-mcp` was blocked by an unrelated `motionmcp` package on npm). The old `motion-calendar-mcp` package is unpublished from npm; the GitHub repo was renamed from `lorecraft-io/motion-calendar-mcp` → `lorecraft-io/motion-mcp` (GitHub 301 redirects the old URL).
 
+## [2.1.3] - 2026-04-20
+
+### Changed
+- **OIDC provenance validation.** Version bump to align published package with the OIDC-signed release flow after the 2.1.2 publish surfaced provenance verification edge cases. `package.json` + `package-lock.json` version bumps only — no runtime behavior changes.
+
+### Fixed
+- Post-release hotfix: publish workflow now falls back to `NPM_TOKEN` auth when the trusted-publisher config is unresolvable (tracked as a June 15, 2026 follow-up to fully migrate back to OIDC-only).
+
+## [2.1.2] - 2026-04-20
+
+### Changed
+- **npm 11+ in the publish workflow.** Trusted-publisher OIDC auth requires npm 11.5 or higher; the publish workflow was upgraded and `package-lock.json` regenerated with npm 11 so platform-specific optional dependencies (rolldown bindings) resolve correctly across CI runners.
+- Shipped the OIDC provenance publish workflow (`npm publish --provenance`, no token secret).
+
+## [2.1.1] - 2026-04-20
+
+### Fixed
+- **Rolldown CI port.** Vitest 4.x + rolldown now CI-clean — `@rolldown/binding-*` hoisted into `optionalDependencies` (npm/cli#4828 workaround) so fresh installs on Linux runners don't fail on missing platform binaries.
+- `engines.node` bumped to `>=20` to match the shipped runtime and stop npm emitting soft warnings on older Node versions.
+- `bin/setup.js` + `install.sh` branding sweep so the interactive setup prints `Motion MCP` (not the old `motion-calendar-mcp` string) end to end.
+
+### Added
+- Structured env validator in `bin/setup.js` that fails fast with a readable message when `MOTION_API_KEY`, `FIREBASE_API_KEY`, `FIREBASE_REFRESH_TOKEN`, or `MOTION_USER_ID` is missing, instead of deferring the error to the first tool call.
+- Dependabot alerts enabled for the repo (parity with the other `lorecraft-io` MCPs).
+
 ## [2.1.0] - 2026-04-18
 
 ### Changed
