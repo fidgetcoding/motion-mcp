@@ -29,3 +29,8 @@ Thumbs.db
 .claude/
 .mcp.json
 CLAUDE.md
+
+# Obsidian vault index note. The parent 2ndBrain-mogging vault keeps a
+# `motion-mcp.md` next to this submodule as a project-index note per its
+# filename=folder convention — it's a vault artifact, not part of motion-mcp.
+motion-mcp.md
