@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 > **Note on package name:** This package was originally published as `motion-calendar-mcp` on npm. Renamed to `fidgetcoding-motion-mcp` on 2026-04-18 under the FidgetCoding brand umbrella (after briefly trying the scoped `@lorecraft/motion-mcp` as an intermediate stop — bare `motion-mcp` was blocked by an unrelated `motionmcp` package on npm). The old `motion-calendar-mcp` package is unpublished from npm; the GitHub repo was renamed from `lorecraft-io/motion-calendar-mcp` → `lorecraft-io/motion-mcp` (GitHub 301 redirects the old URL).
 
+## [Unreleased]
+
+### Added
+- README: social-links badge strip (X · LinkedIn · YouTube · Instagram, ruvnet-style for-the-badge) inserted into the centered header block beneath the project metadata badges.
+
+### Changed
+- Git history rewrite: `git filter-repo` collapsed all author/committer identities (dependabot[bot], lorecraft-io, fidgetcoding, nate variants) into a single `Nate Davidovich <nate@lorecraft.io>` identity across `main` and all release tags. All `Co-authored-by:` trailers stripped. Tag commit hashes for v2.1.0 / v2.1.2 / v2.1.3 changed; npm tarballs unaffected (already published from old hashes).
+
 ## [2.1.3] - 2026-04-20
 
 ### Changed
