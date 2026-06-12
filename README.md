@@ -12,7 +12,7 @@
 
 [![npm version](https://img.shields.io/npm/v/fidgetcoding-motion-mcp)](https://www.npmjs.com/package/fidgetcoding-motion-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MCP Compatible](https://img.shields.io/badge/MCP-compatible-green)](https://modelcontextprotocol.io)
 
 [![Follow on X](https://img.shields.io/badge/FOLLOW%20%40fidgetcoding-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/fidgetcoding) [![LinkedIn](https://img.shields.io/badge/LINKEDIN-CONNECT-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=555555)](https://www.linkedin.com/in/nate-davidovich/) [![YouTube](https://img.shields.io/badge/YOUTUBE-SUBSCRIBE-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=555555)](https://youtube.com/@fidgetcoding) [![Instagram](https://img.shields.io/badge/INSTAGRAM-FOLLOW-E4405F?style=for-the-badge&logo=instagram&logoColor=white&labelColor=555555)](https://instagram.com/fidgetcoding)
@@ -124,7 +124,7 @@ Until then, this is here.
 | Full event CRUD from Claude | 🟢 **✅ Yes** | Manual (GUI) | ❌ No | ❌ No |
 | Availability / free-busy checks | 🟢 **✅ Yes** | ✅ Visual only | ❌ No | ❌ No |
 | Teammate event visibility | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
-| Recurring events (create/read) | 🟢 **✅ Yes** (via `create_event`) | ✅ Yes | ❌ No | ❌ No |
+| Recurring events (read) | 🟢 **✅ Yes** (instances via `list_events`) | ✅ Yes | ❌ No | ❌ No |
 | All-day event queries | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
 | Search events by text | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
 | Calendar management (enable/disable) | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
@@ -165,14 +165,14 @@ If you'd rather set everything up inline in your Claude MCP config, skip ahead t
 | Name | What it does | Key params |
 |---|---|---|
 | `list_calendars` | List every calendar connected to your Motion account — names, IDs, source emails, enabled status. | *(none)* |
-| `list_events` | Fetch events inside a date range with full details (title, time, attendees, location, conference link, recurrence). | `start`, `end`, `calendar_ids?` |
-| `search_events` | Search events by text query across titles and descriptions. | `query`, `start?`, `end?` |
-| `create_event` | Create an event with title, time, description, location, attendees. Defaults to your primary calendar if no ID is passed. Organizer, status, visibility, and timezone are filled in automatically. Supports recurrence. | `title`, `start`, `end`, `calendar_id?`, `description?`, `location?`, `attendees?`, `recurrence?` |
+| `list_events` | Fetch events inside a date range with full details (title, time, attendees, location, conference link). | `start_date`, `end_date`, `calendar_id?` |
+| `search_events` | Search events by text query across titles and descriptions. | `query` |
+| `create_event` | Create an event with title, time, description, location, attendees. Defaults to your primary calendar if no ID is passed. Organizer and timezone are filled in automatically. | `title`, `start`, `end`, `calendar_id?`, `description?`, `location?`, `attendees?`, `is_all_day?`, `status?`, `visibility?`, `conference_type?` |
 | `update_event` | Modify an existing event — title, time, description, location. | `event_id`, `title?`, `start?`, `end?`, `description?`, `location?` |
 | `delete_event` | Remove an event by ID. | `event_id` |
-| `check_availability` | Find open time slots across all calendars. Scans working hours (default 9am–6pm, weekdays) and returns gaps of at least a given duration. | `start`, `end`, `duration_minutes`, `working_hours?` |
-| `get_teammate_events` | Pull a teammate's events for a date range given their user ID. Useful for "is Sarah free Wednesday morning?" | `user_ids`, `start`, `end` |
-| `get_allday_events` | List all-day events separately (OOO, holidays, deadlines) with optional calendar filtering. | `start`, `end`, `calendar_id?` |
+| `check_availability` | Find open time slots across all calendars. Scans working hours (9am–6pm, weekdays) and returns gaps of at least a given duration. | `start_date`, `end_date`, `duration_minutes?` |
+| `get_teammate_events` | Pull a teammate's events for a date range given their user ID. Useful for "is Sarah free Wednesday morning?" | `teammate_user_ids`, `start_date`, `end_date` |
+| `get_allday_events` | List all-day events separately (OOO, holidays, deadlines) with optional calendar filtering. | `start_date`, `end_date`, `calendar_id?` |
 | `sync_calendars` | Force a sync between Motion and your connected providers (Google, Outlook). Useful when events were added externally. | *(none)* |
 | `manage_calendars` | Enable or disable specific calendars inside your Motion account. | `calendar_id`, `enabled` |
 
@@ -212,13 +212,13 @@ Worked examples — what you say, what Claude does, what comes back.
 
 ---
 
-### Example 3 — "Create a recurring weekly 1:1."
+### Example 3 — "Create a 1:1 with an invite."
 
-**You:** *"Create a 30-minute 1:1 with teammate@example.com every Tuesday at 2pm, starting next Tuesday, called 'Weekly 1:1'."*
+**You:** *"Create a 30-minute 1:1 with teammate@example.com next Tuesday at 2pm, called 'Weekly 1:1'."*
 
-**Claude calls:** `create_event` with title, start/end in your timezone, `attendees: ["teammate@example.com"]`, and a weekly recurrence rule.
+**Claude calls:** `create_event` with title, start/end in your timezone, and `attendees: ["teammate@example.com"]`.
 
-**Result:** Event is created on your primary calendar, invite fires, Motion's auto-scheduler respects the fixed time. Claude confirms the event ID and first occurrence.
+**Result:** Event is created on your primary calendar, invite fires, Motion's auto-scheduler respects the fixed time. Claude confirms the event ID. (Recurring-event *creation* isn't exposed by this MCP — set recurrence in the Motion app; existing recurring events show up normally in `list_events`.)
 
 ---
 

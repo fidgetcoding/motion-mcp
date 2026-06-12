@@ -1,6 +1,12 @@
 # OIDC Publish Setup
 
-Releases ship via `.github/workflows/publish.yml` using npm's OIDC trusted publisher flow — no long-lived token required.
+> **Current state (2026-06): this repo publishes via classic `NPM_TOKEN` auth, not OIDC.**
+> The trusted-publisher config on npmjs.com for this package kept binding to the wrong
+> repo regardless of UI edits (npm backend issue — see the comment at the top of
+> `.github/workflows/publish.yml`). The steps below are the target setup once that
+> config untangles; until then `publish.yml` uses `secrets.NPM_TOKEN`.
+
+Target flow: releases ship via `.github/workflows/publish.yml` using npm's OIDC trusted publisher flow — no long-lived token required.
 
 ## To publish a new version
 
@@ -14,4 +20,4 @@ Go to `https://www.npmjs.com/package/fidgetcoding-motion-mcp/access` → Publish
 
 Without this, `npm publish --provenance` fails with: `unauthorized: The package requires ...`.
 
-The previous token-based workflow is kept as `publish-token.yml.bak` for diff reference and can be deleted once the OIDC flow is verified.
+`publish-token.yml.bak` is an earlier token-based workflow kept for diff reference; the live `publish.yml` currently uses token auth too (see note at top).

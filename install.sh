@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# MOTION CALENDAR MCP — INSTALLER
+# MOTION MCP — INSTALLER
 # ============================================================
 # Installs motion-mcp as a Claude Code MCP server,
 # collects credentials, writes .env, and verifies the setup.
@@ -57,13 +57,13 @@ if command -v node &>/dev/null; then
   NODE_VERSION=$(node --version)
   success "Node.js found: $NODE_VERSION"
 
-  # Check minimum version (18+)
+  # Check minimum version (20+, matches "engines" in package.json)
   NODE_MAJOR=$(echo "$NODE_VERSION" | sed 's/v//' | cut -d. -f1)
-  if [ "$NODE_MAJOR" -lt 18 ]; then
-    fail "Node.js 18+ required (found $NODE_VERSION). Update at https://nodejs.org"
+  if [ "$NODE_MAJOR" -lt 20 ]; then
+    fail "Node.js 20+ required (found $NODE_VERSION). Update at https://nodejs.org"
   fi
 else
-  fail "Node.js not found. Install it from https://nodejs.org (v18+ required)"
+  fail "Node.js not found. Install it from https://nodejs.org (v20+ required)"
 fi
 
 # -- npm --

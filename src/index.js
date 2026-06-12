@@ -13,7 +13,12 @@ import { validateId, validateDate, validateISODate, validateEnum, validateString
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ENV_PATH = process.env.DOTENV_CONFIG_PATH || resolve(__dirname, "../.env");
-config({ path: ENV_PATH });
+// quiet: dotenv >= 17 prints an "injected env" tip line to STDOUT by default.
+// Stdout is the MCP JSON-RPC channel — any non-JSON line corrupts the stream.
+config({ path: ENV_PATH, quiet: true });
+
+// Read version from package.json so it never drifts from the published release
+const PKG = JSON.parse(readFileSync(resolve(__dirname, "../package.json"), "utf8"));
 
 const INTERNAL_BASE = "https://internal.usemotion.com";
 const PUBLIC_BASE = "https://api.usemotion.com/v1";
@@ -560,6 +565,13 @@ async function handleCreateEvent(args) {
     organizerEmail = calendar?.providerId || "";
   } else {
     const primary = await getPrimaryCalendar();
+    if (!primary) {
+      // mainCalendarId didn't match any returned calendar — don't blow up
+      // with a null deref; tell the caller how to recover.
+      throw new Error(
+        "Could not resolve your primary Motion calendar. Run list_calendars and pass calendar_id explicitly."
+      );
+    }
     calendarId = primary.id;
     organizerEmail = primary.email;
   }
@@ -864,7 +876,7 @@ async function handleManageCalendars(args) {
 
 // Server setup
 const server = new Server(
-  { name: "motion", version: "2.1.0" },
+  { name: "motion", version: PKG.version },
   { capabilities: { tools: {} } }
 );
 

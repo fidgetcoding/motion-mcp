@@ -4,9 +4,17 @@ All notable changes to `fidgetcoding-motion-mcp` are documented here.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **Note on package name:** This package was originally published as `motion-calendar-mcp` on npm. Renamed to `fidgetcoding-motion-mcp` on 2026-04-18 under the FidgetCoding brand umbrella (after briefly trying the scoped `@lorecraft/motion-mcp` as an intermediate stop — bare `motion-mcp` was blocked by an unrelated `motionmcp` package on npm). The old `motion-calendar-mcp` package is unpublished from npm; the GitHub repo was renamed from `lorecraft-io/motion-calendar-mcp` → `lorecraft-io/motion-mcp` (GitHub 301 redirects the old URL).
+> **Note on package name:** This package was originally published as `motion-calendar-mcp` on npm. Renamed to `fidgetcoding-motion-mcp` on 2026-04-18 under the FidgetCoding brand umbrella (after briefly trying the scoped `@lorecraft/motion-mcp` as an intermediate stop — bare `motion-mcp` was blocked by an unrelated `motionmcp` package on npm). The old `motion-calendar-mcp` package is unpublished from npm; the GitHub repo was renamed from `lorecraft-io/motion-calendar-mcp` → `lorecraft-io/motion-mcp` (GitHub 301 redirects the old URL). The owner account has since been renamed too — the canonical URL today is `github.com/fidgetcoding/motion-mcp` (all old URLs 301-redirect).
 
 ## [Unreleased]
+
+### Fixed
+- MCP stdio stream corruption: dotenv 17 prints an "injected env" tip line to stdout by default, which lands ahead of the JSON-RPC stream. Suppressed with `quiet: true` in `src/index.js`.
+- Server version reported over MCP `initialize` was hard-coded at `2.1.0`; now read from `package.json` so it can't drift from the published release.
+- `create_event` could crash with a null dereference when Motion's `mainCalendarId` doesn't match any returned calendar; now throws a clear error telling the caller to pass `calendar_id` explicitly.
+- `install.sh` enforced Node 18+ while `package.json` `engines` requires `>=20`; installer and README badge now both say 20+. Installer header also still said "MOTION CALENDAR MCP" (pre-rename branding).
+- README Tools table listed parameter names that don't exist on the actual tool schemas (`start`/`end`/`calendar_ids`/`user_ids`/`working_hours`/`recurrence`); corrected to the real ones (`start_date`, `end_date`, `calendar_id`, `teammate_user_ids`, etc.) and removed the recurring-event *creation* claim (`create_event` has no recurrence param — recurrence is set in the Motion app).
+- `OIDC-PUBLISH-SETUP.md` claimed OIDC was the live publish flow; corrected to reflect the current `NPM_TOKEN` fallback documented in `publish.yml`.
 
 ### Added
 - README: social-links badge strip (X · LinkedIn · YouTube · Instagram, ruvnet-style for-the-badge) inserted into the centered header block beneath the project metadata badges.
