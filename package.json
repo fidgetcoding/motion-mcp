@@ -39,9 +39,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lorecraft-io/motion-mcp"
+    "url": "https://github.com/fidgetcoding/motion-mcp"
   },
-  "homepage": "https://github.com/lorecraft-io/motion-mcp#readme",
+  "homepage": "https://github.com/fidgetcoding/motion-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
     "dotenv": "17.4.2"
@@ -56,6 +56,6 @@
     "@rolldown/binding-darwin-x64": "1.0.2"
   },
   "bugs": {
-    "url": "https://github.com/lorecraft-io/motion-mcp/issues"
+    "url": "https://github.com/fidgetcoding/motion-mcp/issues"
   }
 }

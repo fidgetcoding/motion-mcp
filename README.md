@@ -4,7 +4,7 @@
 
 # Motion MCP
 
-![Motion MCP](https://raw.githubusercontent.com/lorecraft-io/motion-mcp/main/motion-mcp.png)
+![Motion MCP](https://raw.githubusercontent.com/fidgetcoding/motion-mcp/main/motion-mcp.png)
 
 **Full calendar access for Claude Code — events, availability, scheduling.**
 
@@ -363,7 +363,7 @@ MIT — see [LICENSE](./LICENSE) for details.
 
 > **Heads up — low-maintenance mode.** I stopped using Motion myself, so I'm not actively building on this MCP anymore. It still works, and I'm leaving it up for anyone still on Motion who wants agentic calendar access. But updates will be sporadic, and I may not keep pace with Motion API changes.
 >
-> The MCP I actively maintain is **[morgen-mcp](https://github.com/lorecraft-io/morgen-mcp)** — same philosophy, different calendar. If you're evaluating calendars and flexible enough to switch, Morgen + morgen-mcp is where I landed.
+> The MCP I actively maintain is **[morgen-mcp](https://github.com/fidgetcoding/morgen-mcp)** — same philosophy, different calendar. If you're evaluating calendars and flexible enough to switch, Morgen + morgen-mcp is where I landed.
 
 If Motion ships a first-party MCP with the calendar surface, I'll link it at the top of this README and step out of the way.
 
@@ -373,11 +373,11 @@ If Motion ships a first-party MCP with the calendar surface, I'll link it at the
 
 ## Author
 
-Built by **Nate Davidovich** / [Lorecraft](https://github.com/lorecraft-io).
+Built by **Nate Davidovich** / [Lorecraft](https://github.com/fidgetcoding).
 
-- GitHub: [lorecraft-io](https://github.com/lorecraft-io)
+- GitHub: [fidgetcoding](https://github.com/fidgetcoding)
 - npm: [lorecraft](https://www.npmjs.com/~lorecraft)
-- Sister project: [morgen-mcp](https://github.com/lorecraft-io/morgen-mcp) (actively maintained)
+- Sister project: [morgen-mcp](https://github.com/fidgetcoding/morgen-mcp) (actively maintained)
 
 <p align="right"><a href="#quick-navigation">↑ back to top</a></p>
 
