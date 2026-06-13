@@ -9,6 +9,7 @@ import { config } from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { validateId, validateDate, validateISODate, validateEnum, validateStringArray, createRateLimiter } from "./validation.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,20 @@ let refreshToken = process.env.FIREBASE_REFRESH_TOKEN;
 const USER_ID = process.env.MOTION_USER_ID;
 const MOTION_API_KEY = process.env.MOTION_API_KEY;
 const TIMEZONE = process.env.MOTION_TIMEZONE || "America/New_York";
+
+// Setup dispatch — must run BEFORE the env-var check below, otherwise the
+// documented "npx fidgetcoding-motion-mcp setup" command dies on the very
+// missing credentials it exists to create. The wizard runs in a child process
+// with inherited stdio (it's interactive); setup.js is fire-and-forget async,
+// so an in-process import would race the exit below.
+if (process.argv[2] === "setup") {
+  const { status } = spawnSync(
+    process.execPath,
+    [resolve(__dirname, "../bin/setup.js")],
+    { stdio: "inherit" }
+  );
+  process.exit(status ?? 0);
+}
 
 // Startup validation
 const _requiredVars = { FIREBASE_API_KEY, FIREBASE_REFRESH_TOKEN: refreshToken, MOTION_USER_ID: USER_ID, MOTION_API_KEY };
