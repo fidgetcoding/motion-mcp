@@ -23,6 +23,11 @@ credentials.json
 .DS_Store
 Thumbs.db
 
+# IDE / editor folders
+.vscode/
+.idea/
+*.swp
+
 # Claude / RuFlo tooling
 .claude-flow/
 .ruflo/
