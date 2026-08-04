@@ -19,6 +19,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 ### Added
 - README: social-links badge strip (X · LinkedIn · YouTube · Instagram, ruvnet-style for-the-badge) inserted into the centered header block beneath the project metadata badges.
 
+### Security
+- Publish workflow migrated off classic `NPM_TOKEN` auth back to OIDC trusted publishing with `--provenance`, retiring the long-lived 2FA-bypassing npm automation token. The April 2026 fallback existed because npm's trusted-publisher record for this package kept binding to `lorecraft-io/morgen-mcp`; the org migration to `fidgetcoding` retired that stale binding. Closes the 2026-06-15 follow-up.
+
 ### Changed
 - Git history rewrite: `git filter-repo` collapsed all author/committer identities (dependabot[bot], lorecraft-io, fidgetcoding, nate variants) into a single `Nate Davidovich <nate@lorecraft.io>` identity across `main` and all release tags. All `Co-authored-by:` trailers stripped. Tag commit hashes for v2.1.0 / v2.1.2 / v2.1.3 changed; npm tarballs unaffected (already published from old hashes).
 
