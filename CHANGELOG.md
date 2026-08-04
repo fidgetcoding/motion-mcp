@@ -17,9 +17,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 - `OIDC-PUBLISH-SETUP.md` claimed OIDC was the live publish flow; corrected to reflect the current `NPM_TOKEN` fallback documented in `publish.yml`.
 
 ### Added
+- `find_meeting_slot` — multi-person scheduling. Intersects your calendar with any number of teammates' (max 20) and returns only windows where every attendee is free. Working hours, weekend inclusion, and whether to count your own calendar are all configurable. Attendees whose calendars the API returned no data for are reported in `attendees_with_no_data` rather than being silently treated as wide open.
+- README: a section naming the other community Motion MCPs and the division of labor — they cover tasks and projects, this covers calendar.
 - README: social-links badge strip (X · LinkedIn · YouTube · Instagram, ruvnet-style for-the-badge) inserted into the centered header block beneath the project metadata badges.
 
+### Changed
+- Slot-finding math extracted from `handleCheckAvailability` into `src/availability.js` as pure, unit-tested functions (`eachDate`, `toBusyIntervals`, `computeFreeSlots`, `unionBusyAcrossUsers`). `check_availability` and `find_meeting_slot` now compute gaps through one code path instead of two. 24 new tests cover overlapping, nested, and boundary-spanning events; `src/index.js` lost ~60 lines.
+
 ### Security
+- All npm advisories cleared (was 5 high / 5 moderate / 1 low): `@modelcontextprotocol/sdk` pinned to 1.30.0 plus a transitive-dependency refresh. `npm audit` reports 0.
 - Publish workflow migrated off classic `NPM_TOKEN` auth back to OIDC trusted publishing with `--provenance`, retiring the long-lived 2FA-bypassing npm automation token. The April 2026 fallback existed because npm's trusted-publisher record for this package kept binding to `lorecraft-io/morgen-mcp`; the org migration to `fidgetcoding` retired that stale binding. Closes the 2026-06-15 follow-up.
 
 ### Changed

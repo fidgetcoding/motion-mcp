@@ -123,6 +123,7 @@ Until then, this is here.
 |---|---|---|---|---|
 | Full event CRUD from Claude | 🟢 **✅ Yes** | Manual (GUI) | ❌ No | ❌ No |
 | Availability / free-busy checks | 🟢 **✅ Yes** | ✅ Visual only | ❌ No | ❌ No |
+| Multi-person "when can we all meet?" | 🟢 **✅ Yes** (`find_meeting_slot`) | ✅ Visual only | ❌ No | ❌ No |
 | Teammate event visibility | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
 | Recurring events (read) | 🟢 **✅ Yes** (instances via `list_events`) | ✅ Yes | ❌ No | ❌ No |
 | All-day event queries | 🟢 **✅ Yes** | ✅ Yes | ❌ No | ❌ No |
@@ -137,6 +138,14 @@ Until then, this is here.
 | Open source / MIT | 🟢 **✅ Yes** | ❌ Proprietary | N/A | N/A |
 
 The tradeoff is honest: this MCP requires a few extra setup steps because it authenticates the way Motion's own web app does (Firebase refresh token + user ID pulled from your browser's IndexedDB). In exchange, you get the calendar surface that every other integration is locked out of.
+
+### What about the other Motion MCP servers?
+
+There are two good ones, and they do a different job. [`motionmcp`](https://github.com/devondragon/MotionMCP) and [`@rf-d/motion-mcp`](https://github.com/RF-D/motion-mcp) are **task and project** servers — projects, statuses, custom fields, recurring templates, comments. Neither exposes calendar events at all.
+
+This one is the **calendar** server. Events, availability, teammate schedules, all-day queries, calendar management. Task support here is read-only (`get_tasks`) on purpose.
+
+They compose fine — install both and let Claude pick. If you only want task management, use one of theirs. If you want Claude to actually move things around on your calendar, you want this one.
 
 <p align="right"><a href="#quick-navigation">↑ back to top</a></p>
 
@@ -171,6 +180,7 @@ If you'd rather set everything up inline in your Claude MCP config, skip ahead t
 | `update_event` | Modify an existing event — title, time, description, location. | `event_id`, `title?`, `start?`, `end?`, `description?`, `location?` |
 | `delete_event` | Remove an event by ID. | `event_id` |
 | `check_availability` | Find open time slots across all calendars. Scans working hours (9am–6pm, weekdays) and returns gaps of at least a given duration. | `start_date`, `end_date`, `duration_minutes?` |
+| `find_meeting_slot` | Find times when **everyone** is free. Intersects your calendar with any number of teammates' and returns only the windows that clear all of them. Working hours and weekend inclusion are configurable. | `attendee_user_ids`, `start_date`, `end_date`, `duration_minutes?`, `include_self?`, `include_weekends?`, `work_start_hour?`, `work_end_hour?` |
 | `get_teammate_events` | Pull a teammate's events for a date range given their user ID. Useful for "is Sarah free Wednesday morning?" | `teammate_user_ids`, `start_date`, `end_date` |
 | `get_allday_events` | List all-day events separately (OOO, holidays, deadlines) with optional calendar filtering. | `start_date`, `end_date`, `calendar_id?` |
 | `sync_calendars` | Force a sync between Motion and your connected providers (Google, Outlook). Useful when events were added externally. | *(none)* |

@@ -11,6 +11,14 @@ import { fileURLToPath } from "url";
 import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { validateId, validateDate, validateISODate, validateEnum, validateStringArray, createRateLimiter } from "./validation.js";
+import {
+  eachDate,
+  toBusyIntervals,
+  computeFreeSlots,
+  unionBusyAcrossUsers,
+  DEFAULT_WORK_START_HOUR,
+  DEFAULT_WORK_END_HOUR,
+} from "./availability.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ENV_PATH = process.env.DOTENV_CONFIG_PATH || resolve(__dirname, "../.env");
@@ -362,6 +370,51 @@ const TOOLS = [
     },
   },
   {
+    name: "find_meeting_slot",
+    description:
+      "Find times when EVERYONE is free. Takes a list of teammate user IDs and returns only the slots where every attendee (you included by default) has no conflicting event. Use this for 'when can we all meet?' — check_availability answers the same question for one person.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        attendee_user_ids: {
+          type: "array",
+          items: { type: "string" },
+          description: "Motion user IDs of the other attendees (max 20)",
+        },
+        start_date: {
+          type: "string",
+          description: "Start date in YYYY-MM-DD format",
+        },
+        end_date: {
+          type: "string",
+          description: "End date in YYYY-MM-DD format",
+        },
+        duration_minutes: {
+          type: "number",
+          description: "Meeting length in minutes — slots shorter than this are excluded (default 30)",
+        },
+        include_self: {
+          type: "boolean",
+          description: "Include your own calendar in the intersection (default true)",
+        },
+        include_weekends: {
+          type: "boolean",
+          description: "Consider Saturday and Sunday as well (default false)",
+        },
+        work_start_hour: {
+          type: "number",
+          description: "Earliest hour to propose, 0-23 in the configured timezone (default 9)",
+        },
+        work_end_hour: {
+          type: "number",
+          description: "Latest hour to propose, 1-24 in the configured timezone (default 18)",
+        },
+      },
+      required: ["attendee_user_ids", "start_date", "end_date"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "get_teammate_events",
     description:
       "See teammate calendar events (busy/out-of-office) within a date range. Provide teammate user IDs to check their schedules.",
@@ -701,90 +754,70 @@ async function handleCheckAvailability(args) {
     }),
   });
 
-  const userEvents = data[USER_ID];
-  const events = userEvents?.events || [];
-
-  // Filter to non-all-day events and sort by start time
-  const timedEvents = events
-    .filter((e) => !e.isAllDay)
-    .map((e) => ({
-      start: new Date(e.start),
-      end: new Date(e.end),
-      title: e.title,
-    }))
-    .sort((a, b) => a.start - b.start);
-
-  // Build date range using string-based date iteration to avoid timezone issues
-  const slots = [];
-  const WORK_START_HOUR = 9;
-  const WORK_END_HOUR = 18;
-
-  // Parse start/end as YYYY-MM-DD strings and iterate by date string
-  const dateStrings = [];
-  const [sy, sm, sd] = args.start_date.split("-").map(Number);
-  const [ey, em, ed] = args.end_date.split("-").map(Number);
-  const endMs = new Date(ey, em - 1, ed).getTime();
-
-  for (let dt = new Date(sy, sm - 1, sd); dt.getTime() <= endMs; dt.setDate(dt.getDate() + 1)) {
-    const dayOfWeek = dt.getDay();
-    // Skip weekends
-    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, "0");
-    const day = String(dt.getDate()).padStart(2, "0");
-    dateStrings.push(`${y}-${m}-${day}`);
-  }
-
-  for (const dateStr of dateStrings) {
-    const dayStart = new Date(`${dateStr}T${String(WORK_START_HOUR).padStart(2, "0")}:00:00`);
-    const dayEnd = new Date(`${dateStr}T${String(WORK_END_HOUR).padStart(2, "0")}:00:00`);
-
-    // Get events for this day
-    const dayEvents = timedEvents.filter(
-      (e) => e.start < dayEnd && e.end > dayStart
-    );
-
-    // Find gaps
-    let cursor = dayStart;
-    for (const evt of dayEvents) {
-      const evtStart = evt.start < dayStart ? dayStart : evt.start;
-      const evtEnd = evt.end > dayEnd ? dayEnd : evt.end;
-
-      if (evtStart > cursor) {
-        const gapMinutes = (evtStart - cursor) / 60_000;
-        if (gapMinutes >= durationMinutes) {
-          slots.push({
-            date: dateStr,
-            start: cursor.toISOString(),
-            end: evtStart.toISOString(),
-            duration_minutes: Math.round(gapMinutes),
-          });
-        }
-      }
-      if (evtEnd > cursor) {
-        cursor = evtEnd;
-      }
-    }
-
-    // Gap after last event until end of working hours
-    if (cursor < dayEnd) {
-      const gapMinutes = (dayEnd - cursor) / 60_000;
-      if (gapMinutes >= durationMinutes) {
-        slots.push({
-          date: dateStr,
-          start: cursor.toISOString(),
-          end: dayEnd.toISOString(),
-          duration_minutes: Math.round(gapMinutes),
-        });
-      }
-    }
-  }
+  const busy = toBusyIntervals(data[USER_ID]?.events);
+  const dates = eachDate(args.start_date, args.end_date);
+  const slots = computeFreeSlots({ busy, dates, durationMinutes });
 
   return {
     timezone: TIMEZONE,
-    working_hours: `${WORK_START_HOUR}:00 - ${WORK_END_HOUR}:00`,
+    working_hours: `${DEFAULT_WORK_START_HOUR}:00 - ${DEFAULT_WORK_END_HOUR}:00`,
     minimum_duration_minutes: durationMinutes,
     available_slots: slots,
+    total_slots: slots.length,
+  };
+}
+
+async function handleFindMeetingSlot(args) {
+  validateStringArray(args.attendee_user_ids, "attendee_user_ids", 20);
+  validateDate(args.start_date, "start_date");
+  validateDate(args.end_date, "end_date");
+  const rangeStartMs = new Date(args.start_date).getTime();
+  const rangeEndMs = new Date(args.end_date).getTime();
+  if (rangeEndMs < rangeStartMs) throw new Error("end_date must be on or after start_date");
+  if ((rangeEndMs - rangeStartMs) / 86_400_000 > 90) throw new Error("Date range cannot exceed 90 days");
+
+  const durationMinutes = typeof args.duration_minutes === "number" && args.duration_minutes > 0
+    ? Math.min(args.duration_minutes, 1440)
+    : 30;
+
+  const workStartHour = typeof args.work_start_hour === "number" ? args.work_start_hour : DEFAULT_WORK_START_HOUR;
+  const workEndHour = typeof args.work_end_hour === "number" ? args.work_end_hour : DEFAULT_WORK_END_HOUR;
+  if (!Number.isInteger(workStartHour) || workStartHour < 0 || workStartHour > 23) {
+    throw new Error("work_start_hour must be an integer between 0 and 23");
+  }
+  if (!Number.isInteger(workEndHour) || workEndHour < 1 || workEndHour > 24) {
+    throw new Error("work_end_hour must be an integer between 1 and 24");
+  }
+  if (workEndHour <= workStartHour) throw new Error("work_end_hour must be greater than work_start_hour");
+
+  const includeSelf = args.include_self !== false;
+  const userIds = [...new Set(includeSelf ? [USER_ID, ...args.attendee_user_ids] : args.attendee_user_ids)];
+  if (userIds.length === 0) throw new Error("No attendees to schedule — pass attendee_user_ids or leave include_self on");
+
+  const data = await internalFetch("/v3/calendar-events/scheduling-assistant", {
+    method: "POST",
+    body: JSON.stringify({
+      userIds,
+      range: { start: args.start_date, end: args.end_date },
+    }),
+  });
+
+  const { busy, missing, perUser } = unionBusyAcrossUsers(data, userIds);
+  const dates = eachDate(args.start_date, args.end_date, {
+    includeWeekends: args.include_weekends === true,
+  });
+  const slots = computeFreeSlots({ busy, dates, durationMinutes, workStartHour, workEndHour });
+
+  return {
+    timezone: TIMEZONE,
+    working_hours: `${workStartHour}:00 - ${workEndHour}:00`,
+    minimum_duration_minutes: durationMinutes,
+    attendees: userIds,
+    busy_event_counts: perUser,
+    // Surfaced rather than swallowed: a user whose calendar failed to load looks
+    // identical to a user who is completely free, and those mean opposite things.
+    attendees_with_no_data: missing,
+    mutual_slots: slots,
     total_slots: slots.length,
   };
 }
@@ -929,6 +962,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case "check_availability":
         result = await handleCheckAvailability(args);
+        break;
+      case "find_meeting_slot":
+        result = await handleFindMeetingSlot(args);
         break;
       case "get_teammate_events":
         result = await handleGetTeammateEvents(args);
