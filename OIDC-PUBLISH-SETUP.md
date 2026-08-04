@@ -20,4 +20,4 @@ Go to `https://www.npmjs.com/package/fidgetcoding-motion-mcp/access` → Publish
 
 Without this, `npm publish --provenance` fails with: `unauthorized: The package requires ...`.
 
-`publish-token.yml.bak` is the earlier token-based workflow, kept for diff reference only. Nothing in CI reads it.
+The earlier token-based workflow was deleted on 2026-08-04 once the automation token was revoked — nothing in CI reads a secret anymore.
