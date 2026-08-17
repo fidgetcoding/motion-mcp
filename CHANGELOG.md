@@ -63,7 +63,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 - **GitHub repo renamed to `lorecraft-io/motion-mcp`** (was `motion-calendar-mcp`). Old URL 301-redirects.
 - README v2: Quick Navigation table, banner image, tagline polish ("Full calendar access for Claude Code — events, availability, scheduling"), low-maintenance-mode callout (Nate moved to Morgen for personal use; Motion MCP stays live for users who prefer Motion).
 - README banner image link swapped to absolute `raw.githubusercontent.com` URL so the banner renders on npmjs.com as well as GitHub.
-- README example prompts: `drew@example.com` → `teammate@example.com`; `"Drew <> Nate 1:1"` → `"Weekly 1:1"` (public example placeholders scrubbed of real names).
+- README example prompts: real names and addresses replaced with neutral placeholders (`teammate@example.com`, `"Weekly 1:1"`).
 - `.env.example` header refreshed: "Motion Calendar MCP Configuration" → "Motion MCP Configuration"; setup URL updated to the renamed repo.
 - `package-lock.json` regenerated with the correct package name field.
 - Git history: `Co-Authored-By: claude-flow <ruv@ruv.net>` trailer stripped from all commits; `Nathan Davidovich` author fields rewritten to `Nate Davidovich`.
